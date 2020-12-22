@@ -1,0 +1,5 @@
+Flask
+mysql-connector
+simplejson
+flask-mysql
+pytz

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <style>
+.center {
+  text-align: center;
+}
+    </style>
+
+
+
+    <!--Required Tags-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="UTF-8">
+    <meta name="description" content="This is college final project for a COVID-19 contact tracing web-application.">
+    <!--Bootstrap Tags-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <!--Title in Browser-->
+    <!-- <title>IS601 CT WebApp</title> -->
+    {% if title %}
+    <title>{{ title }} - IS601 CT WebApp</title>
+    {% else %}
+    <title>IS601 CT WebApp</title>
+    {% endif %}
+
+</head>
+
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-dark">
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav active">
+            {% if title %}
+                <!-- If Homepage -->
+                {% if title == 'Home' %}
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">Home Page<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/CheckIn">New Check-in</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/CheckOut">Check-out</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Search">Search</a>
+                </li>
+                {% endif %}
+                <!-- If Checkin -->
+                {% if title == 'Check In' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home Page<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/CheckIn">New Check-in</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/CheckOut">Check-out</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Search">Search</a>
+                </li>
+                {% endif %}
+                <!-- If Checkout -->
+                {% if title == 'Check Out' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home Page<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/CheckIn">New Check-in</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/CheckOut">Check-out</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Search">Search</a>
+                </li>
+                {% endif %}
+                <!-- If Search -->
+                {% if title == 'Search Times' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home Page<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/CheckIn">New Check-in</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/CheckOut">Check-out</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/Search">Search</a>
+                </li>
+                {% endif %}
+            <!-- If there is no title -->
+            {% else %}
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home Page<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/CheckIn">New Check-in</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/CheckOut">Check-out</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/Search">Search</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+    <a class="navbar-brand justify-content-end" href="https://njit.instructure.com/courses/12731"
+       target="_blank">IS-601</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</nav>
+
+
+<!--Main Table-->
+<div class="container mt-3">
+    <main role="main" class="container">{% block content %}{% endblock %}</main>
+</div>
+
+
+<!--Footer-->
+<div id="footer">
+    <!--Optional JavaScript-->
+    <!--jQuery first, then Popper.js, then Bootstrap JS-->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+            integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+            crossorigin="anonymous"></script>
+</div>
+</body>
+</html>

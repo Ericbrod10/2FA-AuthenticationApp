@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+<form action="/CheckOut" method="POST">
+    {% if cookie %}
+    <div class = "center"><h2>Do you want to Check-out of this location?</h2></div>
+    <div class = "center"><button type="submit" class="btn btn-danger btn-lg">Check Out</button></div>
+    {% else %}
+    <div class = "center"><h2>You have to check-in before you can check-out.</h2></div>
+    <div class = "center"><a role="button" class="btn btn-success btn-lg" href="/CheckIn">Check-In</a></div>
+    {% endif %}
+</form>
+
+{% endblock %}
