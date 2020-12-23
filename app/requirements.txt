@@ -3,3 +3,5 @@ mysql-connector
 simplejson
 flask-mysql
 pytz
+pyqrcode
+pypng

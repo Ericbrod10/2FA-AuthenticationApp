@@ -1,16 +1,20 @@
 {% extends "layout.html" %}
 {% block content %}
 
-{% if count == 0 %}
-<div class = "center"><h2>No one is currently checked in to this building</h2></div>
+{% if athCode %}
+<div class = "center"><h2>Scan the QR Code below and enter the code on your mobile device:</h2></div>
+<div class = "center"><img src = "{{ img }}" alt = "Didn't Work"></div>
+<div class = "center"><h2>Code: {{ athCode }}</h2></div>
 
-{% elif count == 1 %}
-<div class = "center"><h2> There is currently {{ count }} person checked in to this building</h2></div>
-
-{% elif count > 1 %}
-<div class = "center"><h2> There are currently {{ count }} people checked In to this building</h2></div>
-
+{% else %}
+<form action="/{{player_id}}" method="POST">
+     <div class="col">
+            <label for="Gamertag">Enter your gamertag exactly as it appears:</label>
+            <input id="Gamertag" type="text" class="form-control" placeholder="Player123"
+                   name="Gamertag" required>
+     </div>
+    <div class="center"><button type="submit" class="btn btn-success">Submit</button></div>
+</form>
 
 {% endif %}
-<div class = "center"><a role="button" class="btn btn-success btn-lg" href="/CheckIn">Check-In</a> <a role="button" class="btn btn-danger btn-lg" href="/CheckOut">Check-Out</a></div>
 {% endblock %}

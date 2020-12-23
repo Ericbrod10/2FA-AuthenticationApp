@@ -1,18 +1,18 @@
-CREATE DATABASE CheckInData;
-use CheckInData;
+CREATE DATABASE PCN_Data;
+use PCN_Data;
 
 
-CREATE TABLE IF NOT EXISTS LogTable (
+CREATE TABLE IF NOT EXISTS PlayerLogTable (
     id int AUTO_INCREMENT,
-    FirstName varchar(255),
-    LastName varchar(255),
-    PhoneNumber varchar(255),
-    ReasonForVisit varchar(255),
-    LoginCookieID varchar(255),
-    CheckInTime DATETIME,
-    CheckOutTime DATETIME,
+    LogTime DATETIME,
+    player_id INT,
+    Gamertag varchar(255),
+    cookie varchar(255),
+    ComputerIP varchar(255),
+    MobileCookieID varchar(255),
+    MobileIP varchar(255),
+    AthCode INT,
+    linkGen varchar(255),
     PRIMARY KEY (id)
 );
 
-INSERT INTO LogTable VALUES
-    (1 ,'FnameTest', 'LnameTest', '555-555-5555','Shopping','Example_Cookie_gfhjdsghjfdbhjdsfdfdfssdf', '2020-12-10 11:18:53', '2020-12-14 12:18:53');
