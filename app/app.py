@@ -2,7 +2,7 @@ from typing import List, Dict
 
 import pytz
 import simplejson as json
-from flask import Flask, request, Response, redirect
+from flask import Flask, request, Response, redirect, abort, send_from_directory
 from flask import render_template
 from flask import url_for, flash, make_response
 from flaskext.mysql import MySQL
@@ -15,6 +15,9 @@ import random
 import png
 from flask import send_file
 import os
+from PIL import Image
+from io import StringIO
+
 '''
 @app.route('/get_image')
 
@@ -49,19 +52,39 @@ def form_insert_post(player_id):
     linkGen = secrets.token_urlsafe(16)
     ### May need to as full URL here... ###
     linkGen = '/' + linkGen
+    ImgID = str(random.randint(1, 9999999))
+
+    filename = 'QR_Code'+ImgID+'.png'
+    path = '/app/'+filename
+
+    try:
+        os.remove(path)
+    except:
+        print('No File Deleted')
 
     url = pyqrcode.create(linkGen)
-    url.png('QR_Code.png', scale=10)
+    url.png(path, scale=10)
+
+    images = []
+    im = Image.open(path)
+    w, h = im.size
+    aspect = 1.0 * w / h
+
+    images.append({
+        'width': int(w),
+        'height': int(h),
+        'src': filename
+    })
 
     AthCode = str(random.randint(1, 99999))
     # redirectLink = '/'+str(player_id)
     # full_filename = os.path('QR_Code.png')
     # full_filename = {'image': open('QR_Code.png', 'rb')}
 
-    res = make_response(render_template('index.html', title='Authenticator', img=full_filename, athCode=AthCode,
-                                        GenLink=linkGen))
-    # res = make_response(redirect('/<int:player_id>', code=302), )
-    # res.data(title='Authenticator', player_id=player_id, athCode=AthCode)
+    res = make_response(render_template('index.html', title='Authenticator', athCode=AthCode,
+                                        GenLink=linkGen, **{'images': images}))
+
+
     if not request.cookies.get('PCNCookie'):
         cookie = secrets.token_urlsafe(32)
         res.set_cookie('PCNCookie', cookie, max_age=60 * 60 * 24 * 365 * 5)
@@ -82,13 +105,25 @@ def form_insert_post(player_id):
     return res
 
 
-@app.route('/imgGen')
-def GetImage():
-    filename = request.form_get('GenLink')
-    filename = '/' + filename
-    url = pyqrcode.create(filename)
-    url.png('QR_Code.png', scale=10)
-    return send_file("QR_Code.png", mimetype='image/png')
+@app.route('/<path:filename>')
+def image(filename):
+    try:
+        w = int(request.args['w'])
+        h = int(request.args['h'])
+    except (KeyError, ValueError):
+        return send_from_directory('.', filename)
+
+    try:
+        im = Image.open(filename)
+        im.thumbnail((w, h), Image.ANTIALIAS)
+        io = StringIO.StringIO()
+        im.save(io, format='png')
+        return Response(io.getvalue(), mimetype='image/png')
+
+    except IOError:
+        abort(404)
+
+    return send_from_directory('.', filename)
 
 
 if __name__ == '__main__':

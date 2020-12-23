@@ -5,3 +5,4 @@ flask-mysql
 pytz
 pyqrcode
 pypng
+Pillow
