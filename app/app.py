@@ -179,6 +179,23 @@ def image(filename):
 
     return send_from_directory('.', filename)
 
+@app.route('/<linkGen>', methods=['GET'])
+def form_get(linkGen):
+    cursor = mysql.get_db().cursor()
+    inputData = (linkGen)
+    searchQuery = """SELECT *
+                    FROM PlayerLogTable 
+                    WHERE linkGen = %s AND MobileIP = 'NULL' """
+    cursor.execute(searchQuery, inputData)
+    result = cursor.fetchall()
+    if result != ():
+
+
+        return render_template('mobile.html', title='Home', result=result)
+
+
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
