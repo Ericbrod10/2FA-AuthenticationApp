@@ -26,7 +26,17 @@ $('img').unveil(1000);
 });
 </script>
 
-{% if athCode %}
+{% if result == () %}
+<form action="/{{player_id}}" method="POST">
+     <div class="col">
+            <label for="Gamertag">Enter your gamertag exactly as it appears:</label>
+            <input id="Gamertag" type="text" class="form-control" placeholder="Player123"
+                   name="Gamertag" required>
+     </div>
+    <div class="center"><button type="submit" class="btn btn-success">Submit</button></div>
+</form>
+
+{% else %}
 <div class = "center"><h2>Scan the QR Code below and enter the code on your mobile device:</h2></div>
 <div class = "center">
 {% for image in images %}
@@ -37,15 +47,6 @@ $('img').unveil(1000);
 </div>
 <div class = "center"><h2>Code: {{ athCode }}</h2></div>
 
-{% else %}
-<form action="/{{player_id}}" method="POST">
-     <div class="col">
-            <label for="Gamertag">Enter your gamertag exactly as it appears:</label>
-            <input id="Gamertag" type="text" class="form-control" placeholder="Player123"
-                   name="Gamertag" required>
-     </div>
-    <div class="center"><button type="submit" class="btn btn-success">Submit</button></div>
-</form>
-
 {% endif %}
+
 {% endblock %}

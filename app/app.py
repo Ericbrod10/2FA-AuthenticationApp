@@ -43,7 +43,61 @@ eastern = pytz.timezone("US/Eastern")
 @app.route('/<int:player_id>', methods=['GET'])
 def form_get(player_id):
     cursor = mysql.get_db().cursor()
-    return render_template('index.html', title='Home', player_id=player_id)
+    inputData = (player_id)
+    searchQuery = """SELECT player_id
+                    FROM PlayerLogTable 
+                    WHERE player_id = %s AND MobileIP = 'NULL' """
+    cursor.execute(searchQuery, inputData)
+    result = cursor.fetchall()
+    # return render_template('index.html', title='Home', player_id=player_id, result=result)
+    if result != ():
+        linkGen = '/' + secrets.token_urlsafe(16)
+        ImgID = str(random.randint(1, 9999999))
+        filename = 'QR_Code' + ImgID + '.png'
+        path = '/app/' + filename
+        try:
+            os.remove(path)
+        except:
+            print('No File Deleted')
+
+        url = pyqrcode.create(linkGen)
+        url.png(path, scale=10)
+
+        images = []
+        im = Image.open(path)
+        w, h = im.size
+        aspect = 1.0 * w / h
+
+        images.append({
+            'width': int(w),
+            'height': int(h),
+            'src': filename
+        })
+
+        AthCode = str(random.randint(1, 99999))
+        # redirectLink = '/'+str(player_id)
+        # full_filename = os.path('QR_Code.png')
+        # full_filename = {'image': open('QR_Code.png', 'rb')}
+
+        res = make_response(render_template('index.html', title='Authenticator', athCode=AthCode,
+                                            GenLink=linkGen, result=result, **{'images': images}))
+
+        if not request.cookies.get('PCNCookie'):
+            cookie = secrets.token_urlsafe(32)
+            res.set_cookie('PCNCookie', cookie, max_age=60 * 60 * 24 * 365 * 5)
+        else:
+            cookie = request.cookies.get('PCNCookie')
+
+        inputData = (int(AthCode), linkGen, int(player_id))
+
+        sql_insert_query = """UPDATE PlayerLogTable SET AthCode = %s, linkGen = %s WHERE Player_ID = %s"""
+        cursor.execute(sql_insert_query, inputData)
+        mysql.get_db().commit()
+
+        #  return send_file("QR_Code.png", mimetype='image/png')
+        return res
+    else:
+        return render_template('index.html', title='Home', player_id=player_id, result=result)
 
 
 @app.route('/<int:player_id>', methods=['POST'])
