@@ -1,6 +1,16 @@
 {% extends "layout.html" %}
 {% block content %}
-<form action="/{{linkGen}}" method="POST">
+
+{% if responder == "Invalid Link" %}
+<h4>Invalid Link, if this is an error please reach out to an admin </h4>.
+
+{% elif responder == "Two-Factor Authentication Complete" %}
+<h4>Two-Factor Authentication Complete</h4>
+
+<a href="https://proclubsnation.com/">Click here to return to https://proclubsnation.com/</a>
+
+{% else %}
+<form action="/ath/{{linkGen}}" method="post">
 
     <div class="col">
         <label for="AthCode">Code:</label>
@@ -9,5 +19,5 @@
     <div class="center"><button type="submit" class="btn btn-success">Submit</button></div>
 
 </form>
-
+{% endif %}
 {% endblock %}

@@ -17,6 +17,9 @@ from flask import send_file
 import os
 from PIL import Image
 from io import StringIO
+from flask import request
+
+
 
 '''
 @app.route('/get_image')
@@ -38,6 +41,7 @@ app.config['MYSQL_DATABASE_PORT'] = 3306
 app.config['MYSQL_DATABASE_DB'] = 'PCN_Data'
 mysql.init_app(app)
 eastern = pytz.timezone("US/Eastern")
+startingURL = 'http://192.168.1.17/ath/'
 
 
 @app.route('/<int:player_id>', methods=['GET'])
@@ -51,7 +55,9 @@ def form_get(player_id):
     result = cursor.fetchall()
     # return render_template('index.html', title='Home', player_id=player_id, result=result)
     if result != ():
-        linkGen = '/' + secrets.token_urlsafe(16)
+        linkGen = secrets.token_urlsafe(16)
+        linkGenDb = linkGen
+        linkGen = startingURL + linkGen
         ImgID = str(random.randint(1, 9999999))
         filename = 'QR_Code' + ImgID + '.png'
         path = '/app/' + filename
@@ -88,7 +94,7 @@ def form_get(player_id):
         else:
             cookie = request.cookies.get('PCNCookie')
 
-        inputData = (int(AthCode), linkGen, int(player_id))
+        inputData = (int(AthCode), linkGenDb, int(player_id))
 
         sql_insert_query = """UPDATE PlayerLogTable SET AthCode = %s, linkGen = %s WHERE Player_ID = %s"""
         cursor.execute(sql_insert_query, inputData)
@@ -104,12 +110,13 @@ def form_get(player_id):
 def form_insert_post(player_id):
     cursor = mysql.get_db().cursor()
     linkGen = secrets.token_urlsafe(16)
+    linkGenDb = linkGen
     ### May need to as full URL here... ###
-    linkGen = '/' + linkGen
+    linkGen = startingURL + linkGen
     ImgID = str(random.randint(1, 9999999))
 
-    filename = 'QR_Code'+ImgID+'.png'
-    path = '/app/'+filename
+    filename = 'QR_Code' + ImgID + '.png'
+    path = '/app/' + filename
 
     try:
         os.remove(path)
@@ -138,6 +145,7 @@ def form_insert_post(player_id):
     res = make_response(render_template('index.html', title='Authenticator', athCode=AthCode,
                                         GenLink=linkGen, **{'images': images}))
 
+    ComputerIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
 
     if not request.cookies.get('PCNCookie'):
         cookie = secrets.token_urlsafe(32)
@@ -148,7 +156,7 @@ def form_insert_post(player_id):
     LogTime = datetime.datetime.now(tz=eastern).strftime('%Y-%m-%d %H:%M:%S')
 
     inputData = (
-        LogTime, int(player_id), request.form.get('Gamertag'), cookie, 'NULL', 'NULL', 'NULL', int(AthCode), linkGen)
+        LogTime, int(player_id), request.form.get('Gamertag'), cookie, ComputerIp, 'NULL', 'NULL', int(AthCode), linkGenDb)
 
     sql_insert_query = """INSERT INTO PlayerLogTable (LogTime, player_id, Gamertag, cookie, ComputerIP, MobileCookieID, 
     MobileIP, AthCode, linkGen) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) """
@@ -179,22 +187,55 @@ def image(filename):
 
     return send_from_directory('.', filename)
 
-@app.route('/<linkGen>', methods=['GET'])
-def form_get(linkGen):
+
+@app.route('/ath/<string:linkGen>', methods=['GET'])
+def mobileForm_get(linkGen):
     cursor = mysql.get_db().cursor()
-    inputData = (linkGen)
+    inputData = linkGen
     searchQuery = """SELECT *
                     FROM PlayerLogTable 
                     WHERE linkGen = %s AND MobileIP = 'NULL' """
     cursor.execute(searchQuery, inputData)
     result = cursor.fetchall()
+    linkGen = linkGen
     if result != ():
+        return render_template('mobile.html', title='Home', result=result, linkGen=linkGen)
+    else:
+        result = 'Invalid Link'
+        return render_template('mobile.html', title='Home', result=result, linkGen=linkGen)
 
 
-        return render_template('mobile.html', title='Home', result=result)
+@app.route('/ath/<string:linkGen>', methods=['POST'])
+def mobileForm_post(linkGen):
+    cursor = mysql.get_db().cursor()
+    linkGen = linkGen
+    inputData = (linkGen, request.form.get('AthCode'))
+    searchQuery = """SELECT *
+                    FROM PlayerLogTable 
+                    WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
+    cursor.execute(searchQuery, inputData)
+    result = cursor.fetchall()
+    if result != ():
+        responder = 'Two-Factor Authentication Complete'
+        res = make_response(render_template('mobile.html', title='Authenticator', responder=responder, linkGen=linkGen))
 
+        if not request.cookies.get('MobileCookie-16-3-14'):
+            cookie = secrets.token_urlsafe(32)
+            res.set_cookie('MobileCookie-16-3-14', cookie, max_age=60 * 60 * 24 * 365 * 5)
+        else:
+            cookie = request.cookies.get('MobileCookie-16-3-14')
 
+        MobileIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        UpdateInputData = (cookie, MobileIp, linkGen, request.form.get('AthCode'))
+        UpdateQuery = """Update PlayerLogTable SET MobileCookieID = %s, MobileIP = %s
+                        WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
+        cursor.execute(UpdateQuery, UpdateInputData)
+        mysql.get_db().commit()
 
+        return res
+    else:
+        responder = 'Invalid Code'
+        return render_template('mobile.html', title='Home', responder=responder, linkGen=linkGen)
 
 
 if __name__ == '__main__':
