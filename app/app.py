@@ -19,8 +19,9 @@ from PIL import Image
 from io import StringIO
 from flask import request
 
-
-
+# import ssl
+# context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+# context.load_cert_chain("server.crt", "server.key")
 '''
 @app.route('/get_image')
 
@@ -41,12 +42,23 @@ app.config['MYSQL_DATABASE_PORT'] = 3306
 app.config['MYSQL_DATABASE_DB'] = 'PCN_Data'
 mysql.init_app(app)
 eastern = pytz.timezone("US/Eastern")
-startingURL = 'http://192.168.1.17/ath/'
+startingURL = 'https://100.8.177.164/ath/'
 
 
 @app.route('/<int:player_id>', methods=['GET'])
 def form_get(player_id):
     cursor = mysql.get_db().cursor()
+
+    inputData = (player_id)
+    searchQuery = """SELECT player_id
+                    FROM PlayerLogTable 
+                    WHERE player_id = %s AND MobileIP != 'NULL' """
+    cursor.execute(searchQuery, inputData)
+    CheckedResult = cursor.fetchall()
+    if CheckedResult != ():
+        result = "Checked"
+        return render_template('index.html', title='Home', player_id=player_id, result=result)
+
     inputData = (player_id)
     searchQuery = """SELECT player_id
                     FROM PlayerLogTable 
@@ -55,6 +67,8 @@ def form_get(player_id):
     result = cursor.fetchall()
     # return render_template('index.html', title='Home', player_id=player_id, result=result)
     if result != ():
+        inputData = (player_id)
+
         linkGen = secrets.token_urlsafe(16)
         linkGenDb = linkGen
         linkGen = startingURL + linkGen
@@ -81,12 +95,12 @@ def form_get(player_id):
         })
 
         AthCode = str(random.randint(1, 99999))
-        # redirectLink = '/'+str(player_id)
-        # full_filename = os.path('QR_Code.png')
-        # full_filename = {'image': open('QR_Code.png', 'rb')}
+            # redirectLink = '/'+str(player_id)
+            # full_filename = os.path('QR_Code.png')
+            # full_filename = {'image': open('QR_Code.png', 'rb')}
 
         res = make_response(render_template('index.html', title='Authenticator', athCode=AthCode,
-                                            GenLink=linkGen, result=result, **{'images': images}))
+                                                GenLink=linkGen, result=result, **{'images': images}))
 
         if not request.cookies.get('PCNCookie'):
             cookie = secrets.token_urlsafe(32)
@@ -100,7 +114,7 @@ def form_get(player_id):
         cursor.execute(sql_insert_query, inputData)
         mysql.get_db().commit()
 
-        #  return send_file("QR_Code.png", mimetype='image/png')
+            #  return send_file("QR_Code.png", mimetype='image/png')
         return res
     else:
         return render_template('index.html', title='Home', player_id=player_id, result=result)
@@ -210,6 +224,7 @@ def mobileForm_post(linkGen):
     cursor = mysql.get_db().cursor()
     linkGen = linkGen
     inputData = (linkGen, request.form.get('AthCode'))
+
     searchQuery = """SELECT *
                     FROM PlayerLogTable 
                     WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
@@ -228,7 +243,7 @@ def mobileForm_post(linkGen):
         MobileIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         UpdateInputData = (cookie, MobileIp, linkGen, request.form.get('AthCode'))
         UpdateQuery = """Update PlayerLogTable SET MobileCookieID = %s, MobileIP = %s
-                        WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
+                            WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
         cursor.execute(UpdateQuery, UpdateInputData)
         mysql.get_db().commit()
 
@@ -240,3 +255,4 @@ def mobileForm_post(linkGen):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+    # app.run(host='0.0.0.0', debug=True, ssl_context=context)

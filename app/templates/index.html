@@ -26,6 +26,12 @@ $('img').unveil(1000);
 });
 </script>
 
+{% if result == "Checked" %}
+<div class = "center"><h2>This Account Has Already Completed Authentication</h2></div>
+
+{% else %}
+
+
 {% if result == () %}
 <form action="/{{player_id}}" method="POST">
      <div class="col">
@@ -48,5 +54,5 @@ $('img').unveil(1000);
 <div class = "center"><h2>Code: {{ athCode }}</h2></div>
 
 {% endif %}
-
+{% endif %}
 {% endblock %}

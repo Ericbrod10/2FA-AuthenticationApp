@@ -6,7 +6,6 @@
 
 {% elif responder == "Two-Factor Authentication Complete" %}
 <h4>Two-Factor Authentication Complete</h4>
-
 <a href="https://proclubsnation.com/">Click here to return to https://proclubsnation.com/</a>
 
 {% else %}
@@ -19,5 +18,9 @@
     <div class="center"><button type="submit" class="btn btn-success">Submit</button></div>
 
 </form>
+
+    {% if responder == "Invalid Code" %}
+    <h4 style = "color:red;">Invalid Code: Please enter the code exactly as it appears from the page with the QR Code</h4>
+    {% endif %}
 {% endif %}
 {% endblock %}
