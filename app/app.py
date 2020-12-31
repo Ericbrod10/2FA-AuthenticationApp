@@ -19,7 +19,7 @@ from PIL import Image
 from io import StringIO
 from flask import request
 
-# import ssl
+import ssl
 # context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 # context.load_cert_chain("server.crt", "server.key")
 '''
@@ -254,5 +254,7 @@ def mobileForm_post(linkGen):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    # app.run(host='0.0.0.0', debug=True)
+    # app.run(host='0.0.0.0', debug=True)
     # app.run(host='0.0.0.0', debug=True, ssl_context=context)
+    app.run(host='0.0.0.0')
