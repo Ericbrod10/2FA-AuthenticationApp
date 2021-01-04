@@ -7,3 +7,6 @@ pyqrcode
 pypng
 Pillow
 pyopenssl
+waitress
+flask
+uwsgi

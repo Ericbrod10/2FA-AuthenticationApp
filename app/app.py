@@ -18,6 +18,7 @@ import os
 from PIL import Image
 from io import StringIO
 from flask import request
+from waitress import serve
 
 import ssl
 # context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
@@ -42,7 +43,12 @@ app.config['MYSQL_DATABASE_PORT'] = 3306
 app.config['MYSQL_DATABASE_DB'] = 'PCN_Data'
 mysql.init_app(app)
 eastern = pytz.timezone("US/Eastern")
-startingURL = 'https://100.8.177.164/ath/'
+startingURL = 'https://proclubsnationauth1.3utilities.com/ath/'
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html', title='Home')
 
 
 @app.route('/<int:player_id>', methods=['GET'])
@@ -257,4 +263,6 @@ if __name__ == '__main__':
     # app.run(host='0.0.0.0', debug=True)
     # app.run(host='0.0.0.0', debug=True)
     # app.run(host='0.0.0.0', debug=True, ssl_context=context)
-    app.run(host='0.0.0.0')
+    serve(app, host='0.0.0.0')
+# serve(app, host='0.0.0.0', port=5000)
+
