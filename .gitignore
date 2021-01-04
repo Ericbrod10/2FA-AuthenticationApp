@@ -1,4 +1,2 @@
 .idea
-./dont use/*
-dont use/letsencrypt/.updated-ssl-dhparams-pem-digest.txt
-dont use/letsencrypt/.updated-options-ssl-nginx-conf-digest.txt
+dont use
