@@ -19,8 +19,10 @@ from PIL import Image
 from io import StringIO
 from flask import request
 from waitress import serve
-
+import bfa
+from werkzeug.middleware.proxy_fix import ProxyFix
 import ssl
+
 # context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 # context.load_cert_chain("server.crt", "server.key")
 '''
@@ -43,7 +45,13 @@ app.config['MYSQL_DATABASE_PORT'] = 3306
 app.config['MYSQL_DATABASE_DB'] = 'PCN_Data'
 mysql.init_app(app)
 eastern = pytz.timezone("US/Eastern")
-startingURL = 'https://proclubsnationauth1.3utilities.com/ath/'
+startingURL = 'http://proclubsnationauth.3utilities.com/ath/'
+
+
+@app.context_processor
+# Don't change name of this function
+def bfa_flask():
+    return bfa.templatetags.bfa.fingerprint_input()
 
 
 @app.route('/', methods=['GET'])
@@ -101,12 +109,12 @@ def form_get(player_id):
         })
 
         AthCode = str(random.randint(1, 99999))
-            # redirectLink = '/'+str(player_id)
-            # full_filename = os.path('QR_Code.png')
-            # full_filename = {'image': open('QR_Code.png', 'rb')}
+        # redirectLink = '/'+str(player_id)
+        # full_filename = os.path('QR_Code.png')
+        # full_filename = {'image': open('QR_Code.png', 'rb')}
 
         res = make_response(render_template('index.html', title='Authenticator', athCode=AthCode,
-                                                GenLink=linkGen, result=result, **{'images': images}))
+                                            GenLink=linkGen, result=result, **{'images': images}))
 
         if not request.cookies.get('PCNCookie'):
             cookie = secrets.token_urlsafe(32)
@@ -120,7 +128,7 @@ def form_get(player_id):
         cursor.execute(sql_insert_query, inputData)
         mysql.get_db().commit()
 
-            #  return send_file("QR_Code.png", mimetype='image/png')
+        #  return send_file("QR_Code.png", mimetype='image/png')
         return res
     else:
         return render_template('index.html', title='Home', player_id=player_id, result=result)
@@ -165,7 +173,20 @@ def form_insert_post(player_id):
     res = make_response(render_template('index.html', title='Authenticator', athCode=AthCode,
                                         GenLink=linkGen, **{'images': images}))
 
-    ComputerIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    try:
+        fp = bfa.fingerprint.get(request)
+    except (ConnectionError, ValueError):
+        fp = "Can't get fingerprint -- Check Out!"
+
+    # ComputerIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+    # if request.environ['HTTP_X_FORWARDED_FOR'] is None:
+    #     ComputerIp = request.environ['REMOTE_ADDR'] + '- Remote'
+    # else:
+    #####################################################################
+    ## ComputerIp = dict(request.headers)
+    ## return ComputerIp
+    ComputerIp = request.form.get('IP')[3:]
+    # return ComputerIp
 
     if not request.cookies.get('PCNCookie'):
         cookie = secrets.token_urlsafe(32)
@@ -176,10 +197,11 @@ def form_insert_post(player_id):
     LogTime = datetime.datetime.now(tz=eastern).strftime('%Y-%m-%d %H:%M:%S')
 
     inputData = (
-        LogTime, int(player_id), request.form.get('Gamertag'), cookie, ComputerIp, 'NULL', 'NULL', int(AthCode), linkGenDb)
+        LogTime, int(player_id), request.form.get('Gamertag'), cookie, fp, ComputerIp, 'NULL', 'NULL', 'NULL',
+        int(AthCode), linkGenDb)
 
-    sql_insert_query = """INSERT INTO PlayerLogTable (LogTime, player_id, Gamertag, cookie, ComputerIP, MobileCookieID, 
-    MobileIP, AthCode, linkGen) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) """
+    sql_insert_query = """INSERT INTO PlayerLogTable (LogTime, player_id, Gamertag, cookie,CompFingerPrint, ComputerIP, 
+    MobileCookieID, MobileFingerPrint, MobileIP, AthCode, linkGen ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """
     cursor.execute(sql_insert_query, inputData)
     mysql.get_db().commit()
 
@@ -246,9 +268,14 @@ def mobileForm_post(linkGen):
         else:
             cookie = request.cookies.get('MobileCookie-16-3-14')
 
-        MobileIp = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
-        UpdateInputData = (cookie, MobileIp, linkGen, request.form.get('AthCode'))
-        UpdateQuery = """Update PlayerLogTable SET MobileCookieID = %s, MobileIP = %s
+        try:
+            fp = bfa.fingerprint.get(request)
+        except (ConnectionError, ValueError):
+            fp = "Can't get fingerprint -- Check Out!"
+
+        MobileIp = request.form.get('IP')[3:]
+        UpdateInputData = (cookie, MobileIp, fp, linkGen, request.form.get('AthCode'))
+        UpdateQuery = """Update PlayerLogTable SET MobileCookieID = %s, MobileIP = %s, MobileFingerPrint = %s
                             WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
         cursor.execute(UpdateQuery, UpdateInputData)
         mysql.get_db().commit()
@@ -259,10 +286,10 @@ def mobileForm_post(linkGen):
         return render_template('mobile.html', title='Home', responder=responder, linkGen=linkGen)
 
 
+# app = ProxyFix(app)
 if __name__ == '__main__':
-    # app.run(host='0.0.0.0', debug=True)
+# app.run(host='0.0.0.0', debug=True, port=8080)
     # app.run(host='0.0.0.0', debug=True)
     # app.run(host='0.0.0.0', debug=True, ssl_context=context)
+    # serve(app, host='0.0.0.0')
     serve(app, host='0.0.0.0')
-# serve(app, host='0.0.0.0', port=5000)
-

@@ -35,6 +35,25 @@ $('img').unveil(1000);
 {% if result == () %}
 <form action="/{{player_id}}" method="POST">
      <div class="col">
+         {{ fingerprint_input }}
+
+         <input type="text" id="IP" name="IP" hidden>
+
+         <script>
+        function text(url) {
+            return fetch(url).then(res => res.text());
+        }
+        text('https://www.cloudflare.com/cdn-cgi/trace/').then(data => {
+        let ipRegex = /ip=.+/
+        let ip = data.match(ipRegex)[0];
+        console.log(ip);
+        document.getElementById("IP").value = ip;
+
+        });
+
+
+
+         </script>
             <label for="Gamertag">Enter your gamertag exactly as it appears:</label>
             <input id="Gamertag" type="text" class="form-control" placeholder="Player123"
                    name="Gamertag" required>
