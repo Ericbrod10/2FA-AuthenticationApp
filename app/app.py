@@ -186,6 +186,7 @@ def form_insert_post(player_id):
     ## ComputerIp = dict(request.headers)
     ## return ComputerIp
     ComputerIp = request.form.get('IP')[3:]
+    ComputerInfo = request.form.get('Dev')[3:]
     # return ComputerIp
 
     if not request.cookies.get('PCNCookie'):
@@ -197,11 +198,13 @@ def form_insert_post(player_id):
     LogTime = datetime.datetime.now(tz=eastern).strftime('%Y-%m-%d %H:%M:%S')
 
     inputData = (
-        LogTime, int(player_id), request.form.get('Gamertag'), cookie, fp, ComputerIp, 'NULL', 'NULL', 'NULL',
+        LogTime, int(player_id), request.form.get('Gamertag'), cookie, fp, ComputerIp, ComputerInfo, 'NULL', 'NULL', 'NULL',
         int(AthCode), linkGenDb)
 
-    sql_insert_query = """INSERT INTO PlayerLogTable (LogTime, player_id, Gamertag, cookie,CompFingerPrint, ComputerIP, 
-    MobileCookieID, MobileFingerPrint, MobileIP, AthCode, linkGen ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """
+    sql_insert_query = """INSERT INTO PlayerLogTable 
+    (LogTime, player_id, Gamertag, cookie,CompFingerPrint, ComputerIP, 
+    ComputerInfo, MobileCookieID, MobileFingerPrint, MobileIP, AthCode, linkGen ) VALUES 
+    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) """
     cursor.execute(sql_insert_query, inputData)
     mysql.get_db().commit()
 
@@ -274,9 +277,10 @@ def mobileForm_post(linkGen):
             fp = "Can't get fingerprint -- Check Out!"
 
         MobileIp = request.form.get('IP')[3:]
-        UpdateInputData = (cookie, MobileIp, fp, linkGen, request.form.get('AthCode'))
-        UpdateQuery = """Update PlayerLogTable SET MobileCookieID = %s, MobileIP = %s, MobileFingerPrint = %s
-                            WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
+        MobileInfo = request.form.get('Dev')[3:]
+        UpdateInputData = (cookie, MobileIp, fp, MobileInfo, linkGen, request.form.get('AthCode'))
+        UpdateQuery = """Update PlayerLogTable SET MobileCookieID = %s, MobileIP = %s, MobileFingerPrint = %s, 
+                        MobileInfo = %s WHERE linkGen = %s AND AthCode = %s AND MobileIP = 'NULL' """
         cursor.execute(UpdateQuery, UpdateInputData)
         mysql.get_db().commit()
 

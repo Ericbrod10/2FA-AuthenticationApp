@@ -12,6 +12,7 @@
 <form action="/ath/{{linkGen}}" method="post">
     {{ fingerprint_input }}
     <input type="text" id="IP" name="IP" hidden>
+    <input type="text" id="Dev" name="Dev" hidden>
 
          <script>
         function text(url) {
@@ -20,17 +21,13 @@
         text('https://www.cloudflare.com/cdn-cgi/trace/').then(data => {
         let ipRegex = /ip=.+/
         let ip = data.match(ipRegex)[0];
+        let devregex = /uag=.+/
         console.log(ip);
+        let devinfo = data.match(devregex)[0];
         document.getElementById("IP").value = ip;
-
+        document.getElementById("Dev").value = devinfo;
         });
-
-
-
          </script>
-
-
-
 
     <div class="col">
         <label for="AthCode">Code:</label>
